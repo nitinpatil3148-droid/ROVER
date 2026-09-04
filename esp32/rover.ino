@@ -1,40 +1,38 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
-#include <ArduinoJson.h>
 
 // =====================================================
-// WIFI DETAILS
+// WIFI
 // =====================================================
 
-const char* WIFI_SSID = "VIRUS";
-const char* WIFI_PASSWORD = "00000000";
+const char* WIFI_SSID = "mallappa patil";
+const char* WIFI_PASSWORD = "abc123xyz.";
+
 
 // =====================================================
-// RENDER BACKEND DETAILS
+// RENDER BACKEND
 // =====================================================
 
-// Example:
-// your-app-name.onrender.com
+const char* SERVER_HOST = "https://rover-okmg.onrender.com";
 
-const char* SERVER_HOST = "your-app-name.onrender.com";
 const int SERVER_PORT = 443;
+
 const char* SERVER_PATH = "/ws/esp32";
 
+
 // =====================================================
-// RELAY PINS
+// MOTOR PINS
+// Based on your existing working code
 // =====================================================
 
-// MOTOR 1
-#define M1_R1 5
-#define M1_R2 18
+// LEFT MOTOR
+#define LmotorA 27
+#define LmotorB 26
 
-// MOTOR 2
-#define M2_R1 19
-#define M2_R2 21
+// RIGHT MOTOR
+#define RmotorA 25
+#define RmotorB 33
 
-// Relay module is assumed ACTIVE LOW
-#define RELAY_ON LOW
-#define RELAY_OFF HIGH
 
 // =====================================================
 // WEBSOCKET
@@ -42,247 +40,279 @@ const char* SERVER_PATH = "/ws/esp32";
 
 WebSocketsClient webSocket;
 
-// =====================================================
-// MOTOR FUNCTIONS
-// =====================================================
-
-void motor1Forward() {
-  digitalWrite(M1_R1, RELAY_ON);
-  digitalWrite(M1_R2, RELAY_OFF);
-}
-
-void motor1Backward() {
-  digitalWrite(M1_R1, RELAY_OFF);
-  digitalWrite(M1_R2, RELAY_ON);
-}
-
-void motor1Stop() {
-  digitalWrite(M1_R1, RELAY_OFF);
-  digitalWrite(M1_R2, RELAY_OFF);
-}
-
-
-void motor2Forward() {
-  digitalWrite(M2_R1, RELAY_ON);
-  digitalWrite(M2_R2, RELAY_OFF);
-}
-
-void motor2Backward() {
-  digitalWrite(M2_R1, RELAY_OFF);
-  digitalWrite(M2_R2, RELAY_ON);
-}
-
-void motor2Stop() {
-  digitalWrite(M2_R1, RELAY_OFF);
-  digitalWrite(M2_R2, RELAY_OFF);
-}
 
 // =====================================================
-// ROVER MOVEMENT
+// FORWARD
 // =====================================================
 
-void forward() {
+void Forward()
+{
+    digitalWrite(LmotorA, HIGH);
+    digitalWrite(LmotorB, LOW);
 
-  motor1Forward();
-  motor2Forward();
+    digitalWrite(RmotorA, HIGH);
+    digitalWrite(RmotorB, LOW);
 
-  Serial.println("ROVER → FORWARD");
+    Serial.println("FORWARD");
 }
 
-void backward() {
-
-  motor1Backward();
-  motor2Backward();
-
-  Serial.println("ROVER → BACKWARD");
-}
-
-void left() {
-
-  motor1Backward();
-  motor2Forward();
-
-  Serial.println("ROVER → LEFT");
-}
-
-void right() {
-
-  motor1Forward();
-  motor2Backward();
-
-  Serial.println("ROVER → RIGHT");
-}
-
-void stopRover() {
-
-  motor1Stop();
-  motor2Stop();
-
-  Serial.println("ROVER → STOP");
-}
 
 // =====================================================
-// COMMAND PROCESSING
+// BACKWARD
 // =====================================================
 
-void processCommand(String command) {
+void Backward()
+{
+    digitalWrite(LmotorA, LOW);
+    digitalWrite(LmotorB, HIGH);
 
-  command.trim();
-  command.toUpperCase();
+    digitalWrite(RmotorA, LOW);
+    digitalWrite(RmotorB, HIGH);
 
-  Serial.print("Received command: ");
-  Serial.println(command);
-
-  if (command == "F") {
-
-    forward();
-
-  } else if (command == "B") {
-
-    backward();
-
-  } else if (command == "L") {
-
-    left();
-
-  } else if (command == "R") {
-
-    right();
-
-  } else if (command == "S") {
-
-    stopRover();
-
-  } else {
-
-    Serial.println("Unknown command");
-
-    stopRover();
-  }
+    Serial.println("BACKWARD");
 }
+
+
+// =====================================================
+// RIGHT
+// =====================================================
+
+void Right()
+{
+    digitalWrite(LmotorA, HIGH);
+    digitalWrite(LmotorB, LOW);
+
+    digitalWrite(RmotorA, LOW);
+    digitalWrite(RmotorB, HIGH);
+
+    Serial.println("RIGHT");
+}
+
+
+// =====================================================
+// LEFT
+// =====================================================
+
+void Left()
+{
+    digitalWrite(LmotorA, LOW);
+    digitalWrite(LmotorB, HIGH);
+
+    digitalWrite(RmotorA, HIGH);
+    digitalWrite(RmotorB, LOW);
+
+    Serial.println("LEFT");
+}
+
+
+// =====================================================
+// STOP
+// =====================================================
+
+void Stop()
+{
+    digitalWrite(LmotorA, LOW);
+    digitalWrite(LmotorB, LOW);
+
+    digitalWrite(RmotorA, LOW);
+    digitalWrite(RmotorB, LOW);
+
+    Serial.println("STOP");
+}
+
+
+// =====================================================
+// PROCESS COMMAND
+// =====================================================
+
+void processCommand(String command)
+{
+    command.trim();
+    command.toUpperCase();
+
+    Serial.print("Command: ");
+    Serial.println(command);
+
+    if (command == "F")
+    {
+        Forward();
+    }
+    else if (command == "B")
+    {
+        Backward();
+    }
+    else if (command == "L")
+    {
+        Left();
+    }
+    else if (command == "R")
+    {
+        Right();
+    }
+    else if (command == "S")
+    {
+        Stop();
+    }
+    else
+    {
+        Stop();
+    }
+}
+
 
 // =====================================================
 // WEBSOCKET EVENT
 // =====================================================
 
 void webSocketEvent(
-  WStype_t type,
-  uint8_t* payload,
-  size_t length
-) {
+    WStype_t type,
+    uint8_t* payload,
+    size_t length
+)
+{
+    switch(type)
+    {
 
-  switch (type) {
+        // ---------------------------------------------
+        // DISCONNECTED
+        // ---------------------------------------------
 
-    case WStype_DISCONNECTED:
+        case WStype_DISCONNECTED:
 
-      Serial.println("WebSocket disconnected");
+            Serial.println("Backend disconnected");
 
-      stopRover();
+            // SAFETY
+            Stop();
 
-      break;
-
-
-    case WStype_CONNECTED:
-
-      Serial.println("WebSocket connected to backend");
-
-      // Tell backend that ESP32 is ready
-      webSocket.sendTXT("ESP32_READY");
-
-      break;
+            break;
 
 
-    case WStype_TEXT: {
+        // ---------------------------------------------
+        // CONNECTED
+        // ---------------------------------------------
 
-      String command = "";
+        case WStype_CONNECTED:
 
-      for (size_t i = 0; i < length; i++) {
-        command += (char)payload[i];
-      }
+            Serial.println("Backend connected");
 
-      processCommand(command);
+            webSocket.sendTXT("ESP32_READY");
 
-      break;
+            break;
+
+
+        // ---------------------------------------------
+        // COMMAND RECEIVED
+        // ---------------------------------------------
+
+        case WStype_TEXT:
+        {
+            String command = "";
+
+            for(size_t i = 0; i < length; i++)
+            {
+                command += (char)payload[i];
+            }
+
+            processCommand(command);
+
+            break;
+        }
+
+
+        default:
+            break;
     }
-
-
-    default:
-
-      break;
-  }
 }
+
 
 // =====================================================
 // WIFI CONNECTION
 // =====================================================
 
-void connectWiFi() {
+void connectWiFi()
+{
+    Serial.println();
+    Serial.println("Connecting to Wi-Fi...");
 
-  Serial.println();
-  Serial.println("Connecting to Wi-Fi...");
+    WiFi.begin(
+        WIFI_SSID,
+        WIFI_PASSWORD
+    );
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    while(WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(".");
+    }
 
-  while (WiFi.status() != WL_CONNECTED) {
+    Serial.println();
 
-    delay(500);
+    Serial.println("Wi-Fi Connected");
 
-    Serial.print(".");
-  }
-
-  Serial.println();
-
-  Serial.println("Wi-Fi connected");
-
-  Serial.print("ESP32 IP: ");
-  Serial.println(WiFi.localIP());
+    Serial.print("ESP32 IP: ");
+    Serial.println(WiFi.localIP());
 }
+
 
 // =====================================================
 // SETUP
 // =====================================================
 
-void setup() {
+void setup()
+{
+    Serial.begin(115200);
 
-  Serial.begin(115200);
 
-  // Relay pins
-  pinMode(M1_R1, OUTPUT);
-  pinMode(M1_R2, OUTPUT);
+    // LEFT MOTOR
+    pinMode(LmotorA, OUTPUT);
+    pinMode(LmotorB, OUTPUT);
 
-  pinMode(M2_R1, OUTPUT);
-  pinMode(M2_R2, OUTPUT);
 
-  // IMPORTANT:
-  // Start with motors stopped
-  stopRover();
+    // RIGHT MOTOR
+    pinMode(RmotorA, OUTPUT);
+    pinMode(RmotorB, OUTPUT);
 
-  Serial.println();
-  Serial.println("================================");
-  Serial.println("   ESP32 FIRE FIGHTING ROVER");
-  Serial.println("================================");
 
-  connectWiFi();
+    // SAFETY
+    Stop();
 
-  // Secure WebSocket
-  webSocket.beginSSL(
-    SERVER_HOST,
-    SERVER_PORT,
-    SERVER_PATH
-  );
 
-  webSocket.onEvent(webSocketEvent);
+    Serial.println();
+    Serial.println("================================");
+    Serial.println("     FIRE FIGHTING ROVER");
+    Serial.println("       2 MOTOR VERSION");
+    Serial.println("================================");
 
-  webSocket.setReconnectInterval(5000);
 
-  Serial.println("Connecting to backend...");
+    // CONNECT WIFI
+    connectWiFi();
+
+
+    // CONNECT TO RENDER
+    webSocket.beginSSL(
+        SERVER_HOST,
+        SERVER_PORT,
+        SERVER_PATH
+    );
+
+
+    webSocket.onEvent(
+        webSocketEvent
+    );
+
+
+    webSocket.setReconnectInterval(5000);
+
+
+    Serial.println("Connecting to backend...");
 }
+
 
 // =====================================================
 // LOOP
 // =====================================================
 
-void loop() {
-
-  webSocket.loop();
+void loop()
+{
+    webSocket.loop();
 }
