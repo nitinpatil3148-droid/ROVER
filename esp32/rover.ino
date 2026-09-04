@@ -13,7 +13,7 @@ const char* WIFI_PASSWORD = "abc123xyz.";
 // RENDER BACKEND
 // =====================================================
 
-const char* SERVER_HOST = "https://rover-okmg.onrender.com";
+const char* SERVER_HOST = "rover-okmg.onrender.com";
 
 const int SERVER_PORT = 443;
 
