@@ -15,7 +15,7 @@ st.set_page_config(
 # BACKEND URL
 # =====================================================
 
-BACKEND_URL = "https://YOUR-BACKEND-NAME.onrender.com"
+BACKEND_URL = "https://rover-okmg.onrender.com"
 
 
 # =====================================================
